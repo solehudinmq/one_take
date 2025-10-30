@@ -1,10 +1,9 @@
-PATH
-  remote: ..
+GIT
+  remote: git@github.com:solehudinmq/one_take.git
+  revision: 538b4728d2e56c1ab67e5f1306766dcb714d336f
+  branch: main
   specs:
     one_take (0.1.0)
-      dotenv (~> 3.1)
-      redis (~> 5.0)
-      uuidtools (~> 3.0)
 
 GEM
   remote: https://rubygems.org/
@@ -63,10 +62,6 @@ GEM
       rack (>= 3.0.0)
     rackup (2.2.1)
       rack (>= 3)
-    redis (5.4.1)
-      redis-client (>= 0.22.0)
-    redis-client (0.26.1)
-      connection_pool
     ruby2_keywords (0.0.5)
     securerandom (0.4.1)
     sinatra (4.2.1)
@@ -91,7 +86,6 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     uri (1.0.4)
-    uuidtools (3.0.0)
 
 PLATFORMS
   aarch64-linux-gnu

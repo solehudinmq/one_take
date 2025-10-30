@@ -1,38 +1,164 @@
 # OneTake
 
-TODO: Delete this and the text below, and describe your gem
+One Take is a Ruby library for implementing idempotency in our backend systems. This means our systems now have the ability to produce an effect only once, even if the same operation is performed multiple times. This makes our systems more secure during retries and avoids the risk of duplicate data.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/one_take`. To experiment with that code, run `bin/console` for an interactive prompt.
+With the One Take library, our backend system will now be more secure, as if the client repeatedly sent the same request body, this is no longer a problem, as our backend system can now make operations idempotent, preventing duplicate data.
+
+## High Flow
+
+Potential problems if we do not implement idempotency when creating / retrying data :
+![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-problem.jpg)
+
+With One Take, now the process of creating or retrying data will not cause duplicate data problems :
+![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-solution.jpg)
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+The minimum version of Ruby that must be installed is 3.0. Install gem 'redis', 'uuidtools' and 'dotenv' (for in development and test environments).
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Add this line to your application's Gemfile :
+```ruby
+gem 'one_take', git: 'git@github.com:solehudinmq/one_take.git', branch: 'main'
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Open terminal, and run this :
+```ruby
+cd your_ruby_application
+bundle install
+```
 
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Create an '.env' file (for development/test environment) :
+```ruby
+# .env
+
+REDIS_URL=<redis-url>
+LOCK_TIMEOUT=<lock-timeout>
+CONNECTION_TIMEOUT_REDIS_POOL=<connection-timeout-redis-pool>
+TOTAL_SIZE_REDIS_POOL=<total-size-redis-pool>
+REDIS_EXPIRE=<redis-expire>
+```
+
+Example : 
+```ruby
+# .env
+
+REDIS_URL=redis://localhost:6379
+LOCK_TIMEOUT=10
+CONNECTION_TIMEOUT_REDIS_POOL=3
+TOTAL_SIZE_REDIS_POOL=5
+REDIS_EXPIRE=60
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+To use this library, add this to your code :
+```ruby
+require 'one_take'
 
-## Development
+idempotency = OneTake::Idempotency.new
+result = idempotency.perform(idempotency_key: idempotency_key) do
+  # create data
+end
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+The following is an example of use in the application :
+```ruby
+# Gemfile
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+source "https://rubygems.org"
+
+gem "byebug"
+gem "sinatra"
+gem "activerecord"
+gem "sqlite3"
+gem "httparty"
+gem "dotenv", groups: [:development, :test]
+gem "one_take", git: "git@github.com:solehudinmq/one_take.git", branch: "main"
+gem "rackup", "~> 2.2"
+gem "puma", "~> 7.1"
+```
+
+```ruby
+# post.rb
+
+require 'sinatra'
+require 'active_record'
+require 'byebug'
+
+# Configure database connections
+ActiveRecord::Base.establish_connection(
+  adapter: 'sqlite3',
+  database: 'db/development.sqlite3'
+)
+
+# Create a db directory if it doesn't exist yet
+Dir.mkdir('db') unless File.directory?('db')
+
+# Model
+class Post < ActiveRecord::Base
+end
+
+# Migration to create posts table
+ActiveRecord::Schema.define do
+  unless ActiveRecord::Base.connection.table_exists?(:posts)
+    create_table :posts do |t|
+      t.string :title
+      t.string :content
+      t.timestamps
+    end
+  end
+end
+```
+
+```ruby
+# app.rb
+require 'sinatra'
+require 'json'
+require 'byebug'
+require_relative 'post'
+require 'one_take'
+
+before do
+  content_type :json
+end
+
+# create data post
+post '/posts' do
+  begin
+    idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
+    
+    idempotency = OneTake::Idempotency.new
+    result = idempotency.perform(idempotency_key: idempotency_key) do
+      request_body = JSON.parse(request.body.read)
+      post = Post.create(title: request_body["title"], content: request_body["content"])
+
+      post
+    end
+    
+    status 201
+    return { data: JSON.parse(result['data']), message: result['status'] }.to_json
+  rescue => e
+    status 500
+    return { error: e.message }.to_json
+  end
+end
+
+# open terminal
+# cd your_project
+# bundle install
+# bundle exec ruby app.rb
+# 1. success scenario
+# curl --location 'http://localhost:4567/posts' \
+# --header 'Content-Type: application/json' \
+# --data '{
+#     "title": "Post 1",
+#     "content": "Content 1"
+# }'
+```
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/one_take.
+Bug reports and pull requests are welcome on GitHub at https://github.com/solehudinmq/one_take.
 
 ## License
 
