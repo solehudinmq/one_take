@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:solehudinmq/one_take.git
-  revision: 207977107b0333e6ec782e21754b8e76b15c4864
+  revision: 7451eadd085bd5204ba7aeb63eb0d9792ec50352
   branch: main
   specs:
     one_take (0.1.0)

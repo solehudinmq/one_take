@@ -56,9 +56,18 @@ end
 # bundle install
 # bundle exec ruby app.rb
 # 1. success scenario
-# curl --location 'http://localhost:4567/posts' \
+# curl --location 'http://0.0.0.0:4567/posts' \
+# --header 'x-idempotency-key: abc-1' \
 # --header 'Content-Type: application/json' \
 # --data '{
 #     "title": "Post 1",
-#     "content": "Content 1"
+#     "content": "Content post 1"
+# }'
+# 2. fail scenarion
+# curl --location 'http://0.0.0.0:4567/error_simulations' \
+# --header 'x-idempotency-key: abc-2' \
+# --header 'Content-Type: application/json' \
+# --data '{
+#     "title": "Post 2",
+#     "content": "Content post 2"
 # }'
