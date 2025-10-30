@@ -64,22 +64,10 @@ end
 Make sure the frontend sends a header named 'x-idempotency-key' :
 ```bash
 curl --location 'http://0.0.0.0:4567/endpoint' \
---header 'x-idempotency-key: idempotency-key' \
+--header 'x-idempotency-key: <idempotency-key>' \
 --header 'Content-Type: application/json' \
 --data '{
-    "field1": "Value1"
-}'
-```
-
-Example :
-
-```bash
-curl --location 'http://0.0.0.0:4567/posts' \
---header 'x-idempotency-key: abc-1' \
---header 'Content-Type: application/json' \
---data '{
-    "title": "Post 1",
-    "content": "Content post 1"
+    "field1": "value1"
 }'
 ```
 
