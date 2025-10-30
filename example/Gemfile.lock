@@ -1,5 +1,7 @@
-PATH
-  remote: ..
+GIT
+  remote: git@github.com:solehudinmq/one_take.git
+  revision: 207977107b0333e6ec782e21754b8e76b15c4864
+  branch: main
   specs:
     one_take (0.1.0)
       dotenv (~> 3.1)
