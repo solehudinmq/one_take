@@ -1,6 +1,13 @@
 # frozen_string_literal: true
 
 require "one_take"
+require "byebug"
+require "httparty"
+require "dotenv"
+
+Dotenv.load(".env", "spec/.env.test")
+
+require_relative "../example/post"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

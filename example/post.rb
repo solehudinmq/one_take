@@ -14,6 +14,7 @@ Dir.mkdir('db') unless File.directory?('db')
 
 # Model
 class Post < ActiveRecord::Base
+  validates :title, presence: true
 end
 
 # Migration to create posts table

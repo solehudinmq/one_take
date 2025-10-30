@@ -49,7 +49,7 @@ module OneTake
         result = yield
 
         # success
-        if result
+        if result.persisted?
           @redis_pool.with do |redis_conn|
             redis_conn.hset(response_key, 'status', 'success')
             redis_conn.hset(response_key, 'data', result.to_json)
@@ -60,7 +60,7 @@ module OneTake
         end
 
         # fail
-        raise 'Your logic failed to execute.'
+        raise 'Failure occurred while saving data.'
       rescue => e
         # error
         raise "Failed to lock : #{e.message}"

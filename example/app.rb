@@ -13,11 +13,32 @@ end
 post '/posts' do
   begin
     idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
-    
+
     idempotency = OneTake::Idempotency.new
     result = idempotency.perform(idempotency_key: idempotency_key) do
       request_body = JSON.parse(request.body.read)
       post = Post.create(title: request_body["title"], content: request_body["content"])
+
+      post
+    end
+    
+    status 201
+    return { data: JSON.parse(result['data']), message: result['status'] }.to_json
+  rescue => e
+    status 500
+    return { error: e.message }.to_json
+  end
+end
+
+# error simulations
+post '/error_simulations' do
+  begin
+    idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
+
+    idempotency = OneTake::Idempotency.new
+    result = idempotency.perform(idempotency_key: idempotency_key) do
+      request_body = JSON.parse(request.body.read)
+      post = Post.create(title: nil, content: request_body["content"])
 
       post
     end
