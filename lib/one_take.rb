@@ -4,6 +4,7 @@ require_relative "one_take/version"
 require "uuidtools"
 require "redis"
 require "connection_pool"
+require "dotenv/load" # only for development and test env
 
 module OneTake
   class Idempotency
@@ -23,7 +24,7 @@ module OneTake
 
     def perform(idempotency_key:)
       # idempotency_key does not exist
-      raise "parameter for 'idempotency_key' is required to be sent." unless idempotency_key
+      raise "header 'x-idempotency-key' is required to be sent." unless idempotency_key
       
       # response key for redis
       response_key = "#{IDEMPOTENCY_KEY_PREFIX}#{idempotency_key}"
@@ -62,7 +63,7 @@ module OneTake
         raise 'Your logic failed to execute.'
       rescue => e
         # error
-        raise "Failed to lock because : #{e.message}"
+        raise "Failed to lock : #{e.message}"
       end
     end
 

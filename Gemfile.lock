@@ -3,6 +3,8 @@ PATH
   specs:
     one_take (0.1.0)
       dotenv (~> 3.1)
+      redis (~> 5.0)
+      uuidtools (~> 3.0)
 
 GEM
   remote: https://rubygems.org/

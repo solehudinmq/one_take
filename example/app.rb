@@ -14,9 +14,8 @@ post '/posts' do
   begin
     idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
     
-    idempotency_process = OneTake::Idempotency.new
-
-    result = idempotency_process.perform(idempotency_key: idempotency_key) do
+    idempotency = OneTake::Idempotency.new
+    result = idempotency.perform(idempotency_key: idempotency_key) do
       request_body = JSON.parse(request.body.read)
       post = Post.create(title: request_body["title"], content: request_body["content"])
 
