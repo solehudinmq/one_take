@@ -122,6 +122,16 @@ end
 ```
 
 ```ruby
+# .env
+
+REDIS_URL=redis://localhost:6379
+LOCK_TIMEOUT=10
+CONNECTION_TIMEOUT_REDIS_POOL=3
+TOTAL_SIZE_REDIS_POOL=5
+REDIS_EXPIRE=60
+```
+
+```ruby
 # app.rb
 require 'sinatra'
 require 'json'
