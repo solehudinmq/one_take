@@ -39,6 +39,21 @@ RSpec.describe OneTake do
     rescue => e
       expect(e.message).to eq("Operation is already in progress with idempotency key : #{idempotency_key}")
     end
+
+    sleep 2
+
+    # retry 2
+    result3 = idempotency.perform(idempotency_key: idempotency_key) do
+      post = Post.create(title: 'Post 1', content: 'Content post 1')
+
+      post
+    end
+
+    data2 = JSON.parse(result3['data'])
+
+    expect(data2["title"]).to eq('Post 1')
+    expect(data2["content"]).to eq('Content post 1')
+    expect(data["id"]).to eq(data2["id"])
   end
 
   it "return failed, x-idempotency-key header not sent" do
