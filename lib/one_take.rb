@@ -15,6 +15,7 @@ module OneTake
     CONNECTION_TIMEOUT_REDIS_POOL = (ENV['CONNECTION_TIMEOUT_REDIS_POOL'] || 5).to_i.freeze
     TOTAL_SIZE_REDIS_POOL = (ENV['TOTAL_SIZE_REDIS_POOL'] || 10).to_i.freeze
     REDIS_EXPIRE = (ENV['REDIS_EXPIRE'] || 3600).to_i.freeze
+    UNLOCK_SCRIPT = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end".freeze
 
     def initialize
       @redis_pool ||= ConnectionPool.new(size: TOTAL_SIZE_REDIS_POOL, timeout: CONNECTION_TIMEOUT_REDIS_POOL) do
@@ -24,7 +25,7 @@ module OneTake
 
     def perform(idempotency_key:)
       # idempotency_key does not exist
-      raise "header 'x-idempotency-key' is required to be sent." unless idempotency_key
+      raise "Header 'x-idempotency-key' is required to be sent." unless idempotency_key
       
       # response key for redis
       response_key = "#{IDEMPOTENCY_KEY_PREFIX}#{idempotency_key}"
@@ -39,10 +40,16 @@ module OneTake
 
         # lock value
         lock_value = generate_lock_value
+        lock_acquired = false
 
         # lock process
-        @redis_pool.with do |redis_conn|
+        lock_acquired = @redis_pool.with do |redis_conn|
           redis_conn.set(lock_key, lock_value, nx: true, ex: LOCK_TIMEOUT)
+        end
+        
+        # idempotency-key has been sent
+        unless lock_acquired
+          raise "Operation is already in progress with idempotency key : #{idempotency_key}"
         end
 
         # call your logic
@@ -63,7 +70,14 @@ module OneTake
         raise 'Failure occurred while saving data.'
       rescue => e
         # error
-        raise "Failed to lock : #{e.message}"
+        raise "Operation failed : #{e.message}"
+      ensure
+        # release the lock
+        if lock_acquired
+          @redis_pool.with do |redis_conn|
+            redis_conn.eval(UNLOCK_SCRIPT, keys: [lock_key], argv: [lock_value])
+          end
+        end
       end
     end
 
