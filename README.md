@@ -72,9 +72,7 @@ end
 ```
 
 Parameter description :
-- idempotency_key (required) : is the x-idempotency-key header sent from the frontend.
-
-Curl Example : 
+- idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : 
 
 ```bash
 curl --location 'http://0.0.0.0:4567/posts' \
