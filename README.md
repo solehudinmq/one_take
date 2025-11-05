@@ -7,30 +7,48 @@ With the One Take library, our backend system will now be more secure, as if the
 ## High Flow
 
 Potential problems if we do not implement idempotency when creating / retrying data :
+
 ![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-problem.jpg)
 
 With One Take, now the process of creating or retrying data will not cause duplicate data problems :
+
 ![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-solution.jpg)
+
+## Requirement
+
+The minimum version of Ruby that must be installed is 3.0.
+
+Requires dependencies to the following gems :
+- uuidtools
+
+- redis
+
+- connection_pool
+
+- dotenv (for the development/test environment)
 
 ## Installation
 
-The minimum version of Ruby that must be installed is 3.0. Install gem 'redis', 'uuidtools' and 'dotenv' (for in development and test environments).
-
 Add this line to your application's Gemfile :
+
 ```ruby
+# Gemfile
 gem 'one_take', git: 'git@github.com:solehudinmq/one_take.git', branch: 'main'
 ```
 
 Open terminal, and run this :
+
 ```ruby
 cd your_ruby_application
 bundle install
 ```
 
-Create an '.env' file (for development/test environment) :
+## Environment Configuration
+
+For 'development' or 'test' environments, make sure the '.env' file is in the root of your application :
+
 ```ruby
 # .env
-
 REDIS_URL=<redis-url>
 LOCK_TIMEOUT=<lock-timeout>
 CONNECTION_TIMEOUT_REDIS_POOL=<connection-timeout-redis-pool>
@@ -38,20 +56,12 @@ TOTAL_SIZE_REDIS_POOL=<total-size-redis-pool>
 REDIS_EXPIRE=<redis-expire>
 ```
 
-Example : 
-```ruby
-# .env
-
-REDIS_URL=redis://localhost:6379
-LOCK_TIMEOUT=10
-CONNECTION_TIMEOUT_REDIS_POOL=3
-TOTAL_SIZE_REDIS_POOL=5
-REDIS_EXPIRE=60
-```
+For more details, you can see the following example : [example/.env](Here).
 
 ## Usage
 
 To use this library, add this to your code :
+
 ```ruby
 require 'one_take'
 
@@ -61,151 +71,22 @@ result = idempotency.perform(idempotency_key: idempotency_key) do
 end
 ```
 
-Make sure the frontend sends a header named 'x-idempotency-key' :
+Parameter description :
+- idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : 
+
 ```bash
-curl --location 'http://0.0.0.0:4567/endpoint' \
---header 'x-idempotency-key: <idempotency-key>' \
+curl --location 'http://0.0.0.0:4567/posts' \
+--header 'x-idempotency-key: abc-1' \
 --header 'Content-Type: application/json' \
 --data '{
-    "field1": "value1"
+    "title": "Post 1",
+    "content": "Content post 1"
 }'
 ```
 
-The following is an example of use in the application :
-```ruby
-# Gemfile
+## Example Implementation in Your Application
 
-source "https://rubygems.org"
-
-gem "byebug"
-gem "sinatra"
-gem "activerecord"
-gem "sqlite3"
-gem "httparty"
-gem "dotenv", groups: [:development, :test]
-gem "one_take", git: "git@github.com:solehudinmq/one_take.git", branch: "main"
-gem "rackup", "~> 2.2"
-gem "puma", "~> 7.1"
-```
-
-```ruby
-# post.rb
-
-require 'sinatra'
-require 'active_record'
-require 'byebug'
-
-# Configure database connections
-ActiveRecord::Base.establish_connection(
-  adapter: 'sqlite3',
-  database: 'db/development.sqlite3'
-)
-
-# Create a db directory if it doesn't exist yet
-Dir.mkdir('db') unless File.directory?('db')
-
-# Model
-class Post < ActiveRecord::Base
-  validates :title, presence: true
-end
-
-# Migration to create posts table
-ActiveRecord::Schema.define do
-  unless ActiveRecord::Base.connection.table_exists?(:posts)
-    create_table :posts do |t|
-      t.string :title
-      t.string :content
-      t.timestamps
-    end
-  end
-end
-```
-
-```ruby
-# .env
-
-REDIS_URL=redis://localhost:6379
-LOCK_TIMEOUT=10
-CONNECTION_TIMEOUT_REDIS_POOL=3
-TOTAL_SIZE_REDIS_POOL=5
-REDIS_EXPIRE=60
-```
-
-```ruby
-# app.rb
-require 'sinatra'
-require 'json'
-require 'byebug'
-require_relative 'post'
-require 'one_take'
-
-before do
-  content_type :json
-end
-
-# create data post
-post '/posts' do
-  begin
-    idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
-    
-    idempotency = OneTake::Idempotency.new
-    result = idempotency.perform(idempotency_key: idempotency_key) do
-      request_body = JSON.parse(request.body.read)
-      post = Post.create(title: request_body["title"], content: request_body["content"])
-
-      post
-    end
-    
-    status 201
-    return { data: JSON.parse(result['data']), message: result['status'] }.to_json
-  rescue => e
-    status 500
-    return { error: e.message }.to_json
-  end
-end
-
-# error simulations
-post '/error_simulations' do
-  begin
-    idempotency_key = request.env['HTTP_X_IDEMPOTENCY_KEY']
-
-    idempotency = OneTake::Idempotency.new
-    result = idempotency.perform(idempotency_key: idempotency_key) do
-      request_body = JSON.parse(request.body.read)
-      post = Post.create(title: nil, content: request_body["content"])
-
-      post
-    end
-    
-    status 201
-    return { data: JSON.parse(result['data']), message: result['status'] }.to_json
-  rescue => e
-    status 500
-    return { error: e.message }.to_json
-  end
-end
-
-# open terminal
-# cd your_project
-# bundle install
-# bundle exec ruby app.rb
-# 1. success scenario
-# curl --location 'http://0.0.0.0:4567/posts' \
-# --header 'x-idempotency-key: abc-1' \
-# --header 'Content-Type: application/json' \
-# --data '{
-#     "title": "Post 1",
-#     "content": "Content post 1"
-# }'
-# 2. fail scenarion
-# curl --location 'http://0.0.0.0:4567/error_simulations' \
-# --header 'x-idempotency-key: abc-2' \
-# --header 'Content-Type: application/json' \
-# --data '{
-#     "title": "Post 2",
-#     "content": "Content post 2"
-# }'
-```
+For examples of applications that use this gem, you can see them here : [example](Here).
 
 ## Contributing
 

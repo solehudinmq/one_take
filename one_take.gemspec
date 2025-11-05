@@ -34,9 +34,10 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
-  spec.add_dependency "dotenv", "~> 3.1"
-  spec.add_dependency "uuidtools", "~> 3.0"
+  spec.add_dependency "dotenv", "~> 2.8"
+  spec.add_dependency "uuidtools", "~> 2.2"
   spec.add_dependency "redis", "~> 5.0"
+  spec.add_dependency "connection_pool", "~> 2.4"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
