@@ -8,7 +8,6 @@ gem "sinatra"
 gem "activerecord"
 gem "sqlite3"
 gem "httparty"
-gem "dotenv", groups: [:development, :test]
 # gem "one_take", path: "../" # for test in localhost
 gem "one_take", git: "git@github.com:solehudinmq/one_take.git", branch: "main"
 gem "rackup", "~> 2.2"

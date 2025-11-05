@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# run : 
-# redis-server --port 6380
 RSpec.describe OneTake do
   before(:all) do
     Post.delete_all
