@@ -84,6 +84,8 @@ curl --location 'http://0.0.0.0:4567/posts' \
 }'
 ```
 
+For more details, you can see the following example : [example/app.rb](https://github.com/solehudinmq/one_take/blob/development/example/app.rb).
+
 ## Example Implementation in Your Application
 
 For examples of applications that use this gem, you can see them here : [example](https://github.com/solehudinmq/one_take/tree/development/example).
