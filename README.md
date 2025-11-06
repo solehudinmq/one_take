@@ -72,11 +72,13 @@ end
 ```
 
 Parameter description :
-- idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : 
+- idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : '123e4567-e89b-12d3-a456-426614174000'
+
+Curl example to send x-idempotency-key :
 
 ```bash
 curl --location 'http://0.0.0.0:4567/posts' \
---header 'x-idempotency-key: abc-1' \
+--header 'x-idempotency-key: 123e4567-e89b-12d3-a456-426614174000' \
 --header 'Content-Type: application/json' \
 --data '{
     "title": "Post 1",
