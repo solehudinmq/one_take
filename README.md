@@ -74,7 +74,15 @@ end
 Parameter description :
 - idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : '123e4567-e89b-12d3-a456-426614174000'
 
-Curl example to send x-idempotency-key :
+For more details, you can see the following example : [example/app.rb](https://github.com/solehudinmq/one_take/blob/development/example/app.rb).
+
+## Example Implementation in Your Application
+
+For examples of applications that use this gem, you can see them here : [example](https://github.com/solehudinmq/one_take/tree/development/example).
+
+## Example of Calling the API with Curl
+
+- Example of calling an API with the 'x-idempotency-key' header : 
 
 ```bash
 curl --location 'http://0.0.0.0:4567/posts' \
@@ -85,12 +93,6 @@ curl --location 'http://0.0.0.0:4567/posts' \
     "content": "Content post 1"
 }'
 ```
-
-For more details, you can see the following example : [example/app.rb](https://github.com/solehudinmq/one_take/blob/development/example/app.rb).
-
-## Example Implementation in Your Application
-
-For examples of applications that use this gem, you can see them here : [example](https://github.com/solehudinmq/one_take/tree/development/example).
 
 ## Contributing
 
