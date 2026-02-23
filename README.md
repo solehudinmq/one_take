@@ -8,11 +8,11 @@ With the One Take library, our backend system will now be more secure, as if the
 
 Potential problems if we do not implement idempotency when creating / retrying data :
 
-![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-problem.jpg)
+![Logo Ruby](./high_flow/One%20Take-problem.jpg)
 
 With One Take, now the process of creating or retrying data will not cause duplicate data problems :
 
-![Logo Ruby](https://github.com/solehudinmq/one_take/blob/development/high_flow/One%20Take-solution.jpg)
+![Logo Ruby](./high_flow/One%20Take-solution.jpg)
 
 ## Requirement
 
@@ -56,7 +56,7 @@ TOTAL_SIZE_REDIS_POOL=<total-size-redis-pool>
 REDIS_EXPIRE=<redis-expire>
 ```
 
-For more details, you can see the following example : [example/.env](https://github.com/solehudinmq/one_take/blob/development/example/.env).
+For more details, you can see the following example : [example/.env](./example/.env).
 
 ## Usage
 
@@ -74,11 +74,11 @@ end
 Parameter description :
 - idempotency_key (required) : is the x-idempotency-key header sent from the frontend. Example : '123e4567-e89b-12d3-a456-426614174000'
 
-For more details, you can see the following example : [example/app.rb](https://github.com/solehudinmq/one_take/blob/development/example/app.rb).
+For more details, you can see the following example : [example/app.rb](./example/app.rb).
 
 ## Example Implementation in Your Application
 
-For examples of applications that use this gem, you can see them here : [example](https://github.com/solehudinmq/one_take/tree/development/example).
+For examples of applications that use this gem, you can see them here : [example](./example).
 
 ## Example of Calling the API with Curl
 
